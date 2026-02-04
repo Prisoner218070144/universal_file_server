@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+
+{% block title %}File Server - {{ current_path }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/browse.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>🗂️ File Server - F Drive</h1>
+    
+    <div class="header-actions">
+        <form action="{{ url_for('routes.search_files') }}" method="get" class="search-form">
+            <input type="text" name="q" class="search-box" placeholder="Search files..." value="">
+        </form>
+        
+        <div class="action-buttons">
+            <button class="btn-action" onclick="showUploadModal()">📤 Upload Files</button>
+            <button class="btn-action" onclick="showCreateFolderModal()">📁 New Folder</button>
+            <button class="btn-action" onclick="showCreateFileModal()">📄 New File</button>
+            
+            {% if current_path %}
+            <button class="btn-download-folder" onclick="downloadFolder('{{ current_path }}')">
+                📥 Download Current Folder
+            </button>
+            {% endif %}
+            
+            <!-- Clipboard Actions -->
+            <div class="clipboard-actions" style="display: inline-flex; gap: 5px;">
+                <button class="btn-action" onclick="pasteFromClipboard()" id="pasteBtn" disabled>📋 Paste</button>
+                <button class="btn-action" onclick="undoLastAction()" id="undoBtn" disabled>↶ Undo</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="breadcrumb">
+        <a href="{{ url_for('routes.index') }}">F Drive</a>
+        {% for bc in breadcrumbs %}
+            <a href="{{ url_for('routes.browse_folder', folder_path=bc.path) }}">{{ bc.name }}</a>
+        {% endfor %}
+    </div>
+    
+    <div class="stats">
+        📊 Contents: 
+        {% if file_counts.folders > 0 %}📁 {{ file_counts.folders }} folders{% endif %}
+        {% if file_counts.videos > 0 %}🎬 {{ file_counts.videos }} videos{% endif %}
+        {% if file_counts.images > 0 %}🖼️ {{ file_counts.images }} images{% endif %}
+        {% if file_counts.documents > 0 %}📄 {{ file_counts.documents }} documents{% endif %}
+        {% if file_counts.text > 0 %}📝 {{ file_counts.text }} text files{% endif %}
+        {% if file_counts.audios > 0 %}🎵 {{ file_counts.audios }} audio files{% endif %}
+        {% if file_counts.others > 0 %}📄 {{ file_counts.others }} other files{% endif %}
+    </div>
+</div>
+
+<div class="file-grid">
+    {% if current_path %}
+    <div class="file-item file-item-parent" onclick="navigateTo('{{ parent_path }}')">
+        <div class="file-item-content">
+            <span class="file-icon">📁</span>
+            <div class="file-details">
+                <div class="file-name">...</div>
+                <div class="file-info">Parent Directory</div>
+            </div>
+        </div>
+        <div class="file-actions">
+            <button class="btn btn-primary" onclick="navigateTo('{{ parent_path }}')">Open</button>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% for item in items %}
+        {% if item.type == 'folder' %}
+        <div class="file-item folder-item file-item-folder" data-path="{{ item.path }}" data-name="{{ item.name }}" data-type="folder">
+            <div class="file-item-content" onclick="navigateTo('{{ item.path }}')">
+                <span class="file-icon">{{ item.icon }}</span>
+                <div class="file-details">
+                    <div class="file-name" title="{{ item.name }}">{{ item.name | truncate(40) }}</div>
+                    <div class="file-info">
+                        {{ item.size }}
+                        {% if item.file_count > 0 %}
+                            • {{ item.file_count }} files
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="file-actions">
+                <button class="btn btn-primary" onclick="navigateTo('{{ item.path }}')">Open</button>
+                <button class="btn btn-download" onclick="downloadFolder('{{ item.path }}')">Download</button>
+                <button class="btn-clipboard" onclick="copyToClipboard('{{ item.path }}', 'folder')">📋 Copy</button>
+                <button class="btn-clipboard" onclick="cutToClipboard('{{ item.path }}', 'folder')">✂️ Cut</button>
+                <button class="btn btn-danger" onclick="deleteItem('{{ item.path }}', 'folder')">Delete</button>
+            </div>
+        </div>
+        {% else %}
+        <div class="file-item file-item-{{ item.type }}" 
+            data-path="{{ item.path }}" 
+            data-name="{{ item.name }}" 
+            data-type="{{ item.type }}"
+            onclick="openPreviewModal('{{ item.path }}', '{{ item.type }}', event)">
+            <div class="file-item-content">
+                <span class="file-icon">{{ item.icon }}</span>
+                <div class="file-details">
+                    <div class="file-name" title="{{ item.name }}">{{ item.name | truncate(40) }}</div>
+                    <div class="file-info">{{ item.size }} • {{ item.type | title }}</div>
+                </div>
+            </div>
+            <div class="file-actions">
+                {% if item.type == 'video' %}
+                    <button class="btn btn-primary" onclick="openVideoModal('{{ item.path }}', '{{ item.name }}', event)">Stream</button>
+                {% elif item.type == 'audio' %}
+                    <button class="btn btn-primary" onclick="openAudioModal('{{ item.path }}', '{{ item.name }}', event)">Stream</button>
+                {% else %}
+                    <button class="btn btn-primary" onclick="openPreviewModal('{{ item.path }}', '{{ item.type }}', event)">Preview</button>
+                {% endif %}
+                <button class="btn btn-secondary" onclick="downloadFile('{{ item.path }}', event)">Download</button>
+                <button class="btn-clipboard" onclick="copyToClipboard('{{ item.path }}', 'file', event)">📋 Copy</button>
+                <button class="btn-clipboard" onclick="cutToClipboard('{{ item.path }}', 'file', event)">✂️ Cut</button>
+                <button class="btn btn-danger" onclick="deleteItem('{{ item.path }}', 'file', event)">Delete</button>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<div class="keyboard-hint">
+    <strong>Keyboard Shortcuts:</strong><br>
+    • Arrow Keys: Navigate between items<br>
+    • Enter: Open selected item<br>
+    • Backspace: Go to parent directory<br>
+    • / : Focus search box<br>
+    • Esc: Clear selection<br>
+    • D: Download selected folder/file<br>
+    • U: Upload files<br>
+    • N: Create new folder<br>
+    • F: Create new file<br>
+    • Ctrl+C: Copy selected<br>
+    • Ctrl+X: Cut selected<br>
+    • Ctrl+V: Paste from clipboard<br>
+    • Ctrl+Z: Undo last action
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeUploadModal()">&times;</span>
+        <h3>📤 Upload Files</h3>
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" multiple style="display: none;">
+            <div class="drop-zone" id="dropZone">
+                <span class="drop-icon">📁</span>
+                <p>Drag & drop files here or click to browse</p>
+                <button class="btn-browse" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+            </div>
+            <div class="file-list" id="fileList">
+                <div class="no-files">No files selected</div>
+            </div>
+            <div class="upload-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="uploadProgressFill"></div>
+                </div>
+                <div class="progress-text" id="uploadProgressText">Ready to upload</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeUploadModal()">Cancel</button>
+                <button class="btn-primary" onclick="startUpload()" id="uploadButton" disabled>Upload Files</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Folder Modal -->
+<div id="createFolderModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCreateFolderModal()">&times;</span>
+        <h3>📁 Create New Folder</h3>
+        <div class="form-group">
+            <label for="folderName">Folder Name:</label>
+            <input type="text" id="folderName" placeholder="Enter folder name" class="form-input">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeCreateFolderModal()">Cancel</button>
+            <button class="btn-primary" onclick="createFolder()">Create Folder</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create File Modal -->
+<div id="createFileModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCreateFileModal()">&times;</span>
+        <h3>📄 Create New File</h3>
+        <div class="form-group">
+            <label for="fileName">File Name (with extension):</label>
+            <input type="text" id="fileName" placeholder="e.g., newfile.txt or newfile" class="form-input">
+            <small class="form-hint">You can create files with any extension or without extension</small>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeCreateFileModal()">Cancel</button>
+            <button class="btn-primary" onclick="createFile()">Create File</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirm Delete</h3>
+        <p>Are you sure you want to delete "<span id="deleteItemName"></span>"?</p>
+        <p class="warning-text" id="deleteWarning"></p>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="modal">
+    <div class="modal-content preview-modal-content">
+        <span class="close" onclick="closePreviewModal()">&times;</span>
+        
+        <div class="preview-header">
+            <div class="preview-file-info">
+                <span id="previewFileIcon" class="file-icon-large">📄</span>
+                <div>
+                    <h3 id="previewFileName">Loading...</h3>
+                    <div class="preview-file-meta">
+                        <span id="previewFileSize">-</span>
+                        <span id="previewFileType">-</span>
+                        <span id="previewFilePosition">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-actions">
+                <button class="btn-action" id="prevFileBtn" onclick="navigateToPrevFile()" disabled>← Previous</button>
+                <button class="btn-action" id="nextFileBtn" onclick="navigateToNextFile()" disabled>→ Next</button>
+                <button class="btn-action" onclick="downloadCurrentPreview()">⬇️ Download</button>
+                <button class="btn-action btn-danger" onclick="deleteCurrentPreview()">🗑️ Delete</button>
+            </div>
+        </div>
+        
+        <div class="preview-body" id="previewBody">
+            <!-- Image Preview -->
+            <div id="imagePreview" class="preview-section" style="display: none;">
+                <div class="image-controls">
+                    <button class="btn-control" onclick="zoomPreviewImage(1.2)">+ Zoom</button>
+                    <button class="btn-control" onclick="zoomPreviewImage(0.8)">- Zoom</button>
+                    <button class="btn-control" onclick="rotatePreviewImage()">↻ Rotate</button>
+                    <button class="btn-control" onclick="resetPreviewImage()">Reset</button>
+                </div>
+                <div class="image-container">
+                    <img id="previewImage" src="" alt="" class="preview-image">
+                </div>
+            </div>
+            
+            <!-- Text Preview -->
+            <div id="textPreview" class="preview-section" style="display: none;">
+                <div class="text-controls">
+                    <select id="textFontSize" onchange="changePreviewFontSize(this.value)">
+                        <option value="12">Small</option>
+                        <option value="14">Medium</option>
+                        <option value="16" selected>Large</option>
+                        <option value="18">X-Large</option>
+                    </select>
+                    <select id="textTheme" onchange="changePreviewTheme(this.value)">
+                        <option value="light">Light</option>
+                        <option value="dark" selected>Dark</option>
+                        <option value="solarized">Solarized</option>
+                    </select>
+                    <button class="btn-control" onclick="togglePreviewLineNumbers()">Line Numbers</button>
+                    <button class="btn-control" onclick="togglePreviewWordWrap()">Word Wrap</button>
+                    <button class="btn-control" onclick="searchInPreviewText()">🔍 Search</button>
+                </div>
+                <pre class="text-content" id="previewTextContent">Loading...</pre>
+            </div>
+            
+            <!-- Document Preview -->
+            <div id="documentPreview" class="preview-section" style="display: none;">
+                <div class="document-info">
+                    <span class="document-icon">📄</span>
+                    <h4 id="documentFileName">Document</h4>
+                    <p id="documentFileInfo">-</p>
+                    <p>This document can be previewed in your browser or downloaded.</p>
+                    <div class="document-actions">
+                        <button class="btn btn-primary" onclick="openPreviewInBrowser()">Open in Browser</button>
+                        <button class="btn btn-secondary" onclick="downloadCurrentPreview()">Download</button>
+                    </div>
+                </div>
+                
+                <!-- PDF Preview -->
+                <div id="pdfPreview" style="display: none;">
+                    <iframe id="pdfFrame" width="100%" height="500" style="border: none; border-radius: 8px;">
+                        Your browser does not support PDFs. Please download the PDF to view it.
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Word Document Preview -->
+            <div id="wordPreview" style="display: none;">
+                <div class="word-preview-header">
+                    <h5>📝 Word Document Preview</h5>
+                    <div class="word-preview-actions">
+                        <button class="btn-control" onclick="zoomWordDocument(1.2)">+ Zoom</button>
+                        <button class="btn-control" onclick="zoomWordDocument(0.8)">- Zoom</button>
+                        <button class="btn-control" onclick="toggleWordDocumentTheme()">Toggle Theme</button>
+                        <button class="btn-control" onclick="printWordDocument()">Print</button>
+                    </div>
+                </div>
+                <div class="word-preview-container" id="wordPreviewContainer">
+                    <div class="word-preview-content" id="wordPreviewContent">
+                        <!-- Word document HTML will be loaded here -->
+                        <div class="loading-spinner"></div>
+                        <p>Loading Word document preview...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Generic Preview -->
+            <div id="genericPreview" class="preview-section" style="display: none;">
+                <div class="generic-preview-content">
+                    <span class="generic-icon">📄</span>
+                    <h4 id="genericFileName">File</h4>
+                    <p id="genericFileInfo">-</p>
+                    <p>Preview not available for this file type.</p>
+                    <div class="generic-actions">
+                        <button class="btn btn-primary" onclick="openPreviewInBrowser()">Open in Browser</button>
+                        <button class="btn btn-secondary" onclick="downloadCurrentPreview()">Download</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading -->
+            <div id="previewLoading" class="preview-section">
+                <div class="loading-spinner"></div>
+                <p>Loading preview...</p>
+            </div>
+        </div>
+        
+        <div class="preview-footer">
+            <div class="file-properties">
+                <h5>📋 File Properties</h5>
+                <table class="properties-table">
+                    <tr>
+                        <td>Path:</td>
+                        <td id="previewFilePath" class="file-path"></td>
+                    </tr>
+                    <tr>
+                        <td>MIME Type:</td>
+                        <td id="previewFileMime"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Text Search Modal -->
+<div id="textSearchModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeTextSearchModal()">&times;</span>
+        <h3>Search in Text</h3>
+        <div class="form-group">
+            <input type="text" id="searchText" placeholder="Enter search term..." class="form-input">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="caseSensitive"> Case sensitive
+            </label>
+            <label>
+                <input type="checkbox" id="wholeWord"> Whole word only
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeTextSearchModal()">Cancel</button>
+            <button class="btn-primary" onclick="performTextSearch()">Search</button>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Video Player Modal -->
+<div id="videoModal" class="modal">
+    <div class="modal-content" style="max-width: 1200px; width: 95%;">
+        <span class="close" onclick="closeVideoModal()">&times;</span>
+        <div class="video-modal-container">
+            <div class="video-modal-header">
+                <h3 id="videoTitle">Video Player</h3>
+                <div class="video-modal-actions">
+                    <button class="btn-action" onclick="togglePlaylist()">📋 Playlist</button>
+                    <button class="btn-action" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+                    <button class="btn-action" onclick="downloadCurrentVideo()">⬇️ Download</button>
+                    <button class="btn-action" onclick="toggleVideoControls()">🎛️ Controls</button>
+                </div>
+            </div>
+            
+            <div class="video-modal-main">
+                <div class="video-player-section">
+                    <div class="video-wrapper" id="modalVideoWrapper">
+                        <video controls 
+                               class="preview-video" 
+                               id="modalVideoPlayer"
+                               data-file-path=""
+                               playsinline
+                               crossorigin="anonymous">
+                            <track kind="captions" label="English" srclang="en" default>
+                            <track kind="subtitles" label="Spanish" srclang="es">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="custom-controls" id="customControls">
+                            <div class="control-bar">
+                                <button class="control-btn" onclick="togglePlayPause()" id="playPauseBtn">▶️</button>
+                                <input type="range" class="seek-slider" id="seekSlider" min="0" max="100" value="0" oninput="seekVideo(this.value)" onchange="seekVideo(this.value)">
+                                <span class="time-display" id="currentTime">0:00</span> / 
+                                <span class="time-display" id="durationTime">0:00</span>
+                                <button class="control-btn" onclick="toggleMute()" id="muteBtn">🔊</button>
+                                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100" oninput="setVolume(this.value)">
+                                <button class="control-btn" onclick="toggleFullscreen()">⛶</button>
+                                <button class="control-btn" onclick="togglePiP()">📺</button>
+                            </div>
+                        </div>
+                        <div class="subtitle-display" id="subtitleDisplay"></div>
+                    </div>
+                    
+                    <div class="video-controls-panel" id="videoControlsPanel">
+                        <div class="control-group">
+                            <span>Aspect Ratio:</span>
+                            <div class="aspect-ratio-buttons">
+                                <button class="aspect-btn active" data-ratio="16:9" onclick="setAspectRatio('16:9')">16:9</button>
+                                <button class="aspect-btn" data-ratio="4:3" onclick="setAspectRatio('4:3')">4:3</button>
+                                <button class="aspect-btn" data-ratio="1:1" onclick="setAspectRatio('1:1')">1:1</button>
+                                <button class="aspect-btn" data-ratio="original" onclick="setAspectRatio('original')">Original</button>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <span>Zoom Level:</span>
+                            <div class="zoom-controls">
+                                <button class="zoom-btn" onclick="zoomVideo(0.5)">50%</button>
+                                <button class="zoom-btn active" onclick="zoomVideo(1)">100%</button>
+                                <button class="zoom-btn" onclick="zoomVideo(1.5)">150%</button>
+                                <button class="zoom-btn" onclick="zoomVideo(2)">200%</button>
+                                <button class="zoom-btn" onclick="resetVideoZoom()">Reset</button>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <span>Playback Speed:</span>
+                            <div class="speed-controls">
+                                <button class="speed-btn" onclick="setPlaybackSpeed(0.5)">0.5x</button>
+                                <button class="speed-btn" onclick="setPlaybackSpeed(0.75)">0.75x</button>
+                                <button class="speed-btn active" onclick="setPlaybackSpeed(1)">1x</button>
+                                <button class="speed-btn" onclick="setPlaybackSpeed(1.25)">1.25x</button>
+                                <button class="speed-btn" onclick="setPlaybackSpeed(1.5)">1.5x</button>
+                                <button class="speed-btn" onclick="setPlaybackSpeed(2)">2x</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="playlist-section" id="modalPlaylistSection">
+                    <div class="playlist-header">
+                        <h4>🎬 Playlist</h4>
+                        <div class="playlist-actions">
+                            <button class="playlist-btn" onclick="shufflePlaylist()">🔀 Shuffle</button>
+                            <button class="playlist-btn" onclick="clearPlaylist()">🗑️ Clear</button>
+                            <button class="playlist-btn" onclick="savePlaylist()">💾 Save</button>
+                            <button class="btn-close-playlist" onclick="togglePlaylist()">×</button>
+                        </div>
+                    </div>
+                    <div class="playlist-items" id="modalPlaylistItems">
+                        <div class="loading-playlist">Loading playlist...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="video-modal-info">
+                <div class="video-info-item">
+                    <span>File:</span> <span id="videoFileName">-</span>
+                </div>
+                <div class="video-info-item">
+                    <span>Duration:</span> <span id="videoDuration">-</span>
+                </div>
+                <div class="video-info-item">
+                    <span>Size:</span> <span id="videoFileSize">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Download Progress Modal -->
+<div id="downloadProgressModal" class="modal">
+    <div class="modal-content">
+        <h3 id="downloadTitle">Downloading Folder</h3>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Preparing download...</div>
+        </div>
+        <div class="progress-info" id="progressInfo"></div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="cancelDownload()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Move/Copy Confirmation Modal -->
+<div id="moveCopyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeMoveCopyModal()">&times;</span>
+        <h3 id="moveCopyTitle">Move/Copy Item</h3>
+        <div class="form-group">
+            <label for="destinationPath">Destination Path:</label>
+            <input type="text" id="destinationPath" placeholder="/path/to/destination" class="form-input" value="{{ current_path }}">
+            <small class="form-hint">Enter the destination folder path</small>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="overwriteExisting" checked>
+                Overwrite existing files
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeMoveCopyModal()">Cancel</button>
+            <button class="btn-primary" onclick="confirmMoveCopy()" id="confirmMoveCopyBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<!-- Original JavaScript references (unchanged) -->
+<script src="{{ url_for('static', filename='js/browse.js') }}"></script>
+<script src="{{ url_for('static', filename='js/preview-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/video-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/clipboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/audio-modal.js') }}"></script>
+
+<script>
+// Original initialization code (unchanged)
+document.addEventListener('DOMContentLoaded', function() {
+    initPreviewModal();
+    initVideoModal();
+    initAudioModal();
+});
+</script>
+{% endblock %}
+{% endblock %}

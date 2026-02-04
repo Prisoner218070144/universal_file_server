@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}File Server - F Drive{% endblock %}</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}">
+    
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/buttons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/modals.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/preview.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-current-path="{{ current_path | default('') }}">
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Original JavaScript files (unchanged) -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+    
+    <script>
+    // Initialize on page load (original code)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Original initialization code
+        if (typeof initPreviewModal === 'function') initPreviewModal();
+        if (typeof initVideoModal === 'function') initVideoModal();
+        if (typeof initAudioModal === 'function') initAudioModal();
+    });
+    </script>
+</body>
+</html>

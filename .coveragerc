@@ -1,0 +1,30 @@
+[run]
+source = 
+    app.py
+    config.py
+    controllers/
+    models/
+    utils/
+    views/
+omit = 
+    */__pycache__/*
+    */tests/*
+    */htmlcov/*
+    */venv/*
+    */env/*
+
+[report]
+exclude_lines = 
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*Test.:
+    @property
+    @abstractmethod
+
+[html]
+directory = htmlcov
+title = Universal File Server Coverage Report

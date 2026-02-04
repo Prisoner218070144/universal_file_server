@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results for "{{ query }}"{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/search.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="search-header">
+    <a href="{{ url_for('routes.index') }}" class="back-link">← Back to F Drive</a>
+    <h1>🔍 Search Results for "{{ query }}"</h1>
+    
+    <div class="search-stats">
+        📊 Found {{ search_stats.count }} items 
+        {% if search_stats.folders > 0 %}(📁 {{ search_stats.folders }} folders{% endif %}
+        {% if search_stats.files > 0 %}, 📄 {{ search_stats.files }} files){% endif %}
+    </div>
+    
+    <!-- New Search Form -->
+    <div style="margin: 20px 0;">
+        <form action="{{ url_for('routes.search_files') }}" method="get" class="search-form-inline">
+            <div class="search-container">
+                <input type="text" 
+                       name="q" 
+                       class="search-box-enhanced" 
+                       placeholder="Search files and folders..." 
+                       value="{{ query }}"
+                       autocomplete="off">
+                <button type="submit" class="btn btn-primary">
+                    🔍 Search
+                </button>
+            </div>
+        </form>
+        <small style="color: #999; display: block; margin-top: 5px;">
+            Tip: Use * for wildcards (e.g., "*.mp4", "file*.txt")
+        </small>
+    </div>
+</div>
+
+{% if not results %}
+<div class="no-results">
+    <div class="no-results-icon">🔍</div>
+    <h3>No results found for "{{ query }}"</h3>
+    <p>Try searching for something else or use wildcards (*) for broader results.</p>
+    <button class="btn-action" onclick="window.location.href='/'">← Back to Home</button>
+</div>
+{% else %}
+<div class="search-results-container">
+    <div class="search-result-count">
+        Showing <strong>{{ results|length }}</strong> of <strong>{{ search_stats.count }}</strong> results
+    </div>
+    
+    <div class="file-grid">
+        {% for item in results %}
+        <div class="file-item search-result-item" data-type="{{ item.type }}">
+            <div class="file-item-content" onclick="{% if item.type == 'folder' %}navigateTo('{{ item.path }}'){% else %}previewFile('{{ item.path }}'){% endif %}">
+                <span class="file-icon">{{ item.icon }}</span>
+                <div class="file-details">
+                    <div class="file-name" title="{{ item.name }}">
+                        {{ item.name | truncate(40) }}
+                        {% if query and query|length > 2 %}
+                        <span class="search-highlight">{{ query }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="file-path" title="{{ item.path }}">{{ item.path | truncate(50) }}</div>
+                    <div class="file-info">
+                        {{ item.size }} 
+                        • {{ item.type | title }}
+                        {% if item.type == 'folder' and item.file_count %}
+                        • {{ item.file_count }} items
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="file-actions">
+                {% if item.type == 'folder' %}
+                    <button class="btn btn-primary" onclick="navigateTo('{{ item.path }}')">Open</button>
+                    <button class="btn btn-download" onclick="downloadFolder('{{ item.path }}')">Download</button>
+                    <button class="btn btn-danger" onclick="deleteItem('{{ item.path }}', 'folder')">Delete</button>
+                {% else %}
+                    {% if item.type == 'video' %}
+                        <button class="btn btn-primary" onclick="openFile('{{ item.path }}', 'stream')">Stream</button>
+                    {% else %}
+                        <button class="btn btn-primary" onclick="previewFile('{{ item.path }}')">Preview</button>
+                    {% endif %}
+                    <button class="btn btn-secondary" onclick="openFile('{{ item.path }}', 'download')">Download</button>
+                    <button class="btn btn-danger" onclick="deleteItem('{{ item.path }}', 'file')">Delete</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if search_stats.count >= 1000 %}
+    <div class="search-warning">
+        ⚠️ Showing first 1000 results. Try a more specific search term.
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Original JavaScript reference -->
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

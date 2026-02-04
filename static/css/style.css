@@ -1,0 +1,13 @@
+/* This file imports all modular CSS files for backward compatibility */
+@import 'base.css';
+@import 'layout.css';
+@import 'utilities.css';
+@import 'components/buttons.css';
+@import 'components/cards.css';
+@import 'components/modals.css';
+@import 'components/forms.css';
+@import 'components/preview.css';
+@import 'pages/browse.css';
+@import 'pages/search.css';
+@import 'pages/preview.css';
+@import 'pages/error.css';

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Preview - {{ filename }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/preview.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="preview-page"
+     data-file-path="{{ file_path }}"
+     data-file-type="{{ file_type }}"
+     data-file-name="{{ filename }}"
+     data-prev-path="{{ prev_file.path if prev_file else '' }}"
+     data-next-path="{{ next_file.path if next_file else '' }}">
+    
+    <!-- Preview Header -->
+    <div class="preview-header">
+        <button class="btn-back" onclick="goBack()">← Back</button>
+        <div class="file-info-preview">
+            <span class="file-icon-large">
+                {% if file_type == 'image' %}
+                    🖼️
+                {% elif file_type == 'document' %}
+                    📄
+                {% elif file_type == 'text' %}
+                    📝
+                {% elif file_type == 'audio' %}
+                    🎵
+                {% else %}
+                    📄
+                {% endif %}
+            </span>
+            <div>
+                <h2 class="file-title">{{ filename }}</h2>
+                <div class="file-meta">
+                    <span class="file-size">{{ file_size }}</span>
+                    <span class="file-type">{{ file_type | title }}</span>
+                    {% if total_files > 1 %}
+                    <span class="file-position">File {{ current_index }} of {{ total_files }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-actions">
+            {% if file_type == 'image' %}
+                <button class="btn-action" onclick="zoomImage(1.2)">+ Zoom</button>
+                <button class="btn-action" onclick="zoomImage(0.8)">- Zoom</button>
+                <button class="btn-action" onclick="rotateImage()">↻ Rotate</button>
+            {% endif %}
+            
+            {% if file_type == 'text' %}
+                <button class="btn-action" onclick="toggleLineNumbers()"># Numbers</button>
+                <button class="btn-action" onclick="toggleWordWrap()">↩ Wrap</button>
+            {% endif %}
+            
+            <button class="btn-action" onclick="downloadFile('{{ file_path }}')">⬇️ Download</button>
+            <button class="btn-action btn-danger" onclick="deleteFile('{{ file_path }}')">🗑️ Delete</button>
+        </div>
+    </div>
+
+    <!-- File Preview Area -->
+    <div class="preview-area" id="previewArea">
+        {% if file_type == 'image' %}
+        <div class="image-preview-container">
+            <img src="/file/{{ file_path | urlencode }}" 
+                 alt="{{ filename }}" 
+                 class="preview-image"
+                 id="previewImage">
+        </div>
+        
+        {% elif file_type == 'text' %}
+        <div class="text-preview-container">
+            <div class="text-controls">
+                <select id="fontSize" onchange="changeFontSize(this.value)">
+                    <option value="12">Small</option>
+                    <option value="14">Medium</option>
+                    <option value="16" selected>Large</option>
+                    <option value="18">X-Large</option>
+                </select>
+                <select id="theme" onchange="changeTheme(this.value)">
+                    <option value="light">Light</option>
+                    <option value="dark" selected>Dark</option>
+                    <option value="solarized">Solarized</option>
+                </select>
+                <button class="btn-control" onclick="toggleLineNumbers()">Line Numbers</button>
+                <button class="btn-control" onclick="toggleWordWrap()">Word Wrap</button>
+                <button class="btn-control" onclick="searchInText()">🔍 Search</button>
+            </div>
+            <pre class="text-preview" id="textPreview">Loading...</pre>
+        </div>
+        
+        {% elif file_type == 'document' %}
+        <div class="document-preview-container">
+            <div class="document-info">
+                <span class="document-icon">📄</span>
+                <h3>{{ filename }}</h3>
+                <p>{{ file_size }} • {{ mime_type }}</p>
+                <p>This document can be previewed in your browser or downloaded.</p>
+                <div class="document-actions">
+                    <button class="btn btn-primary" onclick="openInBrowser('{{ file_path }}')">Open in Browser</button>
+                    <button class="btn btn-secondary" onclick="downloadFile('{{ file_path }}')">Download</button>
+                </div>
+            </div>
+            
+            {% if filename.lower().endswith('.pdf') %}
+            <div class="pdf-preview">
+                <iframe src="/file/{{ file_path | urlencode }}#toolbar=0&navpanes=0" 
+                        width="100%" 
+                        height="600"
+                        style="border: none; border-radius: 8px;">
+                    Your browser does not support PDFs. Please download the PDF to view it.
+                </iframe>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% elif file_type == 'video' %}
+        <!-- No video preview - redirect to stream -->
+        <div class="generic-preview">
+            <div class="generic-icon">🎬</div>
+            <h3>{{ filename }}</h3>
+            <p>Video files cannot be previewed. Please use the Stream button from the browse page.</p>
+            <div class="generic-actions">
+                <button class="btn-primary" onclick="goBack()">← Back to Browse</button>
+                <button class="btn-secondary" onclick="downloadFile('{{ file_path }}')">Download Video</button>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="generic-preview">
+            <div class="generic-icon">📄</div>
+            <h3>{{ filename }}</h3>
+            <p>Preview not available for this file type.</p>
+            <div class="generic-actions">
+                <button class="btn-primary" onclick="openInBrowser('{{ file_path }}')">Open in Browser</button>
+                <button class="btn-secondary" onclick="downloadFile('{{ file_path }}')">Download</button>
+                <button class="btn-back" onclick="goBack()">Back to Browser</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Navigation Controls -->
+    {% if total_files > 1 and file_type != 'video' %}
+    <div class="preview-navigation">
+        <button class="btn-nav" onclick="navigateToPrev()" {% if not prev_file %}disabled{% endif %}>
+            ← Previous ({{ prev_file.name if prev_file else '' }})
+        </button>
+        
+        <div class="nav-info">
+            <span class="current-file">{{ current_index }} / {{ total_files }}</span>
+            <span class="file-type-badge">{{ file_type | title }}</span>
+        </div>
+        
+        <button class="btn-nav" onclick="navigateToNext()" {% if not next_file %}disabled{% endif %}>
+            Next ({{ next_file.name if next_file else '' }}) →
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- File Properties -->
+    <div class="file-properties">
+        <h4>📋 File Properties</h4>
+        <table class="properties-table">
+            <tr>
+                <td>Name:</td>
+                <td>{{ filename }}</td>
+            </tr>
+            <tr>
+                <td>Type:</td>
+                <td>{{ file_type | title }}</td>
+            </tr>
+            <tr>
+                <td>Size:</td>
+                <td>{{ file_size }}</td>
+            </tr>
+            <tr>
+                <td>MIME Type:</td>
+                <td>{{ mime_type }}</td>
+            </tr>
+            <tr>
+                <td>Path:</td>
+                <td class="file-path-preview">{{ file_path }}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirm Delete</h3>
+        <p>Are you sure you want to delete "<span id="deleteFileName"></span>"?</p>
+        <p class="warning-text">This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Text Search Modal -->
+<div id="textSearchModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeTextSearchModal()">&times;</span>
+        <h3>Search in Text</h3>
+        <div class="form-group">
+            <input type="text" id="searchText" placeholder="Enter search term..." class="form-input">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="caseSensitive"> Case sensitive
+            </label>
+            <label>
+                <input type="checkbox" id="wholeWord"> Whole word only
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeTextSearchModal()">Cancel</button>
+            <button class="btn-primary" onclick="performTextSearch()">Search</button>
+        </div>
+    </div>
+</div>
+
+<!-- Original JavaScript reference -->
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+{% endblock %}

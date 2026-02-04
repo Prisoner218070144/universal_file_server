@@ -1,0 +1,366 @@
+/* Error Container */
+.error-page {
+    text-align: center;
+    padding: var(--space-xl);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    margin: var(--space-lg) auto;
+    max-width: 800px;
+    box-shadow: var(--shadow-md);
+}
+
+/* Error Icon */
+.error-icon {
+    font-size: 80px;
+    margin-bottom: var(--space-lg);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Error Code */
+.error-code {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--color-danger);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Error Title */
+.error-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-md) 0;
+    color: var(--color-text);
+}
+
+/* Error Message */
+.error-message {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-xl) 0;
+    line-height: 1.6;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Error Actions */
+.error-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    margin: var(--space-xl) 0;
+    flex-wrap: wrap;
+}
+
+.error-actions .btn {
+    min-width: 150px;
+    padding: var(--space-md) var(--space-lg);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Error Debug Info */
+.error-debug {
+    margin: var(--space-xl) 0;
+    padding: var(--space-lg);
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    text-align: left;
+    border: 1px solid var(--color-danger);
+}
+
+.error-debug summary {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-danger);
+    cursor: pointer;
+    padding: var(--space-sm);
+    margin: -var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.error-debug summary::-webkit-details-marker {
+    display: none;
+}
+
+.error-debug summary::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform var(--transition-fast);
+    margin-left: auto;
+}
+
+.error-debug[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.error-debug summary:hover {
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.error-debug pre {
+    color: var(--color-text);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+}
+
+/* Error Tips */
+.error-tips {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-md);
+    text-align: left;
+}
+
+.error-tips h4 {
+    color: var(--color-primary);
+    margin-bottom: var(--space-md);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.error-tips h4::before {
+    content: '📋';
+    font-size: 1.2em;
+}
+
+.error-tips ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.error-tips li {
+    padding: var(--space-sm) 0;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.error-tips li:last-child {
+    border-bottom: none;
+}
+
+.error-tips li::before {
+    content: "✓";
+    color: var(--color-primary);
+    font-weight: bold;
+    font-size: 1.1em;
+    min-width: 20px;
+}
+
+/* Contact Info */
+.contact-info {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: 0.9em;
+    text-align: center;
+    border: 1px solid var(--color-border);
+}
+
+.contact-info::before {
+    content: '📞';
+    margin-right: var(--space-xs);
+}
+
+/* Specific error types */
+.error-page.error-404 .error-icon {
+    color: #667eea;
+}
+
+.error-page.error-403 .error-icon {
+    color: #ff9800;
+}
+
+.error-page.error-500 .error-icon {
+    color: #f44336;
+}
+
+.error-page.error-404 .error-code {
+    color: #667eea;
+}
+
+.error-page.error-403 .error-code {
+    color: #ff9800;
+}
+
+.error-page.error-500 .error-code {
+    color: #f44336;
+}
+
+/* Responsive error page */
+@media (max-width: 768px) {
+    .error-page {
+        padding: var(--space-lg);
+        margin: var(--space-md) auto;
+    }
+    
+    .error-icon {
+        font-size: 60px;
+    }
+    
+    .error-code {
+        font-size: 2.5rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .error-message {
+        font-size: 1rem;
+        margin-bottom: var(--space-lg);
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .error-actions .btn {
+        width: 100%;
+        margin: 2px 0;
+    }
+    
+    .error-debug {
+        padding: var(--space-md);
+    }
+    
+    .error-debug summary {
+        font-size: 1rem;
+    }
+    
+    .error-debug pre {
+        font-size: 0.8rem;
+        padding: var(--space-sm);
+    }
+    
+    .error-tips {
+        padding: var(--space-md);
+    }
+    
+    .error-tips h4 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-page {
+        padding: var(--space-md);
+    }
+    
+    .error-icon {
+        font-size: 48px;
+        margin-bottom: var(--space-md);
+    }
+    
+    .error-code {
+        font-size: 2rem;
+    }
+    
+    .error-title {
+        font-size: 1.25rem;
+    }
+    
+    .error-message {
+        font-size: 0.95rem;
+    }
+    
+    .error-tips li {
+        font-size: 0.9rem;
+    }
+    
+    .contact-info {
+        font-size: 0.85rem;
+        padding: var(--space-sm);
+    }
+}
+
+/* Print styles for error page */
+@media print {
+    .error-page {
+        border: 1px solid #ddd;
+        box-shadow: none;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .error-icon {
+        color: black !important;
+        animation: none;
+    }
+    
+    .error-code {
+        color: black !important;
+        text-shadow: none;
+    }
+    
+    .error-title {
+        color: black !important;
+    }
+    
+    .error-message {
+        color: #666 !important;
+    }
+    
+    .error-actions {
+        display: none !important;
+    }
+    
+    .error-debug {
+        border: 1px solid #ddd;
+    }
+    
+    .error-debug summary {
+        color: black !important;
+    }
+    
+    .error-debug pre {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+    
+    .error-tips {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+    }
+    
+    .error-tips li {
+        color: black;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .error-tips li::before {
+        color: #4CAF50;
+    }
+    
+    .contact-info {
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #ddd;
+    }
+}
