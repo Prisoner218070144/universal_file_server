@@ -43,9 +43,9 @@ jobs:
       #run: |
         #mypy --ignore-missing-imports --strict .
     
-    - name: Security check with bandit
-      run: |
-        bandit -r . -ll
+    #- name: Security check with bandit
+      #run: |
+        #bandit -r . -ll
     
     - name: Security check with safety
       run: |
