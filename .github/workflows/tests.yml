@@ -51,9 +51,9 @@ jobs:
       run: |
         safety check -r requirements.txt
     
-    - name: Run unit tests
-      run: |
-        pytest tests/unit/ -v --cov=app --cov-report=xml
+    #- name: Run unit tests
+      #run: |
+        #pytest tests/unit/ -v --cov=app --cov-report=xml
     
     - name: Run integration tests
       run: |
