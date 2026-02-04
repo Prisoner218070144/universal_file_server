@@ -4,9 +4,9 @@ Functional tests for browsing functionality - Fixed version
 import os
 import sys
 import tempfile
+
 import pytest
 from flask import Flask
-
 
 # Add the project root to Python path
 project_root = os.path.dirname(
@@ -67,6 +67,7 @@ class TestBrowseFunctional:
     def _setup_patches(self):
         """Setup patches for configuration"""
         import importlib
+
         import config
 
         # Create a test config module
@@ -132,8 +133,9 @@ class TestBrowseFunctional:
             shutil.rmtree(self.test_dir)
 
         # Restore original config
-        import config
         import importlib
+
+        import config
 
         for attr, value in self.original_config.items():
             setattr(config, attr, value)

@@ -67,8 +67,9 @@ class TestAppConfiguration:
 
     def test_app_context_processor(self):
         """Test context processor injects globals"""
-        from app import create_app
         from flask import template_rendered
+
+        from app import create_app
 
         app, _ = create_app()
 
@@ -100,8 +101,9 @@ class TestAppConfiguration:
         assert app.logger is not None
 
         # Check log directory
-        from config import Config
         import logging.config
+
+        from config import Config
 
         logging_config = Config.LOGGING_CONFIG
 

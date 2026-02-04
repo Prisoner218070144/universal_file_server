@@ -1,13 +1,14 @@
 """
 Integration tests for routes
 """
+import json
 import os
 import tempfile
-import json
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from werkzeug.datastructures import FileStorage
 from io import BytesIO
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+from werkzeug.datastructures import FileStorage
 
 
 class TestRoutesIntegration:
@@ -127,10 +128,10 @@ class TestRoutesIntegration:
         }
 
         # Import routes after patching config
-        from controllers.routes import routes
-
         # Create test app
         from flask import Flask
+
+        from controllers.routes import routes
 
         self.app = Flask(__name__)
         self.app.register_blueprint(routes)

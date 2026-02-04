@@ -2,12 +2,13 @@
 File system models with enhanced features and optimized performance
 """
 
+import fnmatch
+import mimetypes
 import os
 import time
-import mimetypes
-import fnmatch
-from config import Config
 from concurrent.futures import ThreadPoolExecutor
+
+from config import Config
 
 
 class FileSystemModel:

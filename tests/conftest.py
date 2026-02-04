@@ -4,10 +4,10 @@ Pytest configuration and fixtures
 import os
 import sys
 import tempfile
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from flask import Flask
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+from flask import Flask
 
 # Add the project root to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

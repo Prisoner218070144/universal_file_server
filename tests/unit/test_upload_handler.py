@@ -2,13 +2,15 @@
 Unit tests for UploadHandler - Fixed version
 """
 import os
-import tempfile
-import pytest
 import shutil
+import tempfile
 import time
-from unittest.mock import Mock, patch, MagicMock, mock_open
-from werkzeug.datastructures import FileStorage
 from io import BytesIO
+from unittest.mock import MagicMock, Mock, mock_open, patch
+
+import pytest
+from werkzeug.datastructures import FileStorage
+
 from utils.upload_handler import UploadHandler
 
 

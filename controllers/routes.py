@@ -2,21 +2,22 @@
 Route handlers with simplified MKV support
 """
 
+import io
 import os
 import re
-import io
-import zipfile
-import urllib.parse
 import shutil
 import time
-from flask import Blueprint, request, Response, redirect, send_file, jsonify
+import urllib.parse
+import zipfile
+
 import mammoth
+from flask import Blueprint, Response, jsonify, redirect, request, send_file
 from werkzeug.utils import secure_filename
 
-from models.file_system import FileSystemModel
-from views.templates import TemplateRenderer
-from utils.upload_handler import UploadHandler
 from config import Config
+from models.file_system import FileSystemModel
+from utils.upload_handler import UploadHandler
+from views.templates import TemplateRenderer
 
 # Create blueprint
 routes = Blueprint("routes", __name__)

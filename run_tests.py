@@ -2,10 +2,10 @@
 Enhanced test runner with coverage reporting and test selection options
 """
 
-import sys
+import argparse
 import os
 import subprocess
-import argparse
+import sys
 from pathlib import Path
 
 

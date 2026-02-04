@@ -4,12 +4,12 @@ Main application entry point for Universal File Server
 
 import logging
 import logging.config
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
-from flask import Flask, render_template, request, redirect, url_for
-from flask_cors import CORS
+from flask import Flask, redirect, render_template, request, url_for
 from flask_caching import Cache
+from flask_cors import CORS
 
 from config import Config
 from controllers.routes import routes

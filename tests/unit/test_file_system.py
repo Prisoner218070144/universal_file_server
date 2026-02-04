@@ -3,9 +3,11 @@ Unit tests for FileSystemModel - Fixed version
 """
 import os
 import tempfile
-import pytest
 import time
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
 from models.file_system import FileSystemModel
 
 
