@@ -175,9 +175,9 @@ class FileSystemModel:
             items.sort(
                 key=lambda x: (
                     x.get("type", "") != "folder",  # Folders first (False < True)
-                    x.get("name", "").lower()
-                    if x.get("name")
-                    else "",  # Safe string comparison
+                    (
+                        x.get("name", "").lower() if x.get("name") else ""
+                    ),  # Safe string comparison
                 )
             )
 

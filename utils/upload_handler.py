@@ -131,9 +131,9 @@ class UploadHandler:
             except Exception as e:
                 results["errors"].append(
                     {
-                        "filename": file.filename
-                        if hasattr(file, "filename")
-                        else "unknown",
+                        "filename": (
+                            file.filename if hasattr(file, "filename") else "unknown"
+                        ),
                         "error": str(e),
                     }
                 )

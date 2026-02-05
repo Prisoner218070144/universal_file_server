@@ -1,6 +1,7 @@
 """
 Integration tests for routes
 """
+
 import json
 import os
 import tempfile

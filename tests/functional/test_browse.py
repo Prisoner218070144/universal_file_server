@@ -1,6 +1,7 @@
 """
 Functional tests for browsing functionality - Fixed version
 """
+
 import os
 import sys
 import tempfile

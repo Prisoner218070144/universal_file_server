@@ -1,6 +1,7 @@
 """
 Pytest configuration and fixtures
 """
+
 import os
 import sys
 import tempfile
@@ -118,9 +119,11 @@ def mock_file_storage():
         mock_file.seek = Mock()
         mock_file.save = Mock()
         mock_file.tell = Mock(
-            return_value=len(content)
-            if isinstance(content, bytes)
-            else len(content.encode("utf-8"))
+            return_value=(
+                len(content)
+                if isinstance(content, bytes)
+                else len(content.encode("utf-8"))
+            )
         )
         return mock_file
 

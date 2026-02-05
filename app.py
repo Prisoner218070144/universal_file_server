@@ -96,9 +96,9 @@ def create_app():
         }
 
         if not Config.DEBUG:
-            response_headers[
-                "Strict-Transport-Security"
-            ] = "max-age=31536000; includeSubDomains"
+            response_headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
 
         # Set headers
         for header, value in response_headers.items():

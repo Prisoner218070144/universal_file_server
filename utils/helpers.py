@@ -349,10 +349,10 @@ def get_file_info(file_path: str) -> Dict[str, Any]:
             actual_size = os.path.getsize(file_path)
         else:
             actual_size = stat.st_size
-        
+
         # Handle st_birthtime which doesn't exist on Linux
         # Use st_ctime (change time) as fallback for creation time
-        if hasattr(stat, 'st_birthtime'):
+        if hasattr(stat, "st_birthtime"):
             created_time = stat.st_birthtime
         else:
             # On Linux and other systems without st_birthtime, use st_ctime
@@ -373,12 +373,12 @@ def get_file_info(file_path: str) -> Dict[str, Any]:
             "is_file": os.path.isfile(file_path),
             "is_link": os.path.islink(file_path),
             "mode": stat.st_mode,
-            "hash_md5": get_file_hash(file_path, "md5")
-            if os.path.isfile(file_path)
-            else "",
-            "hash_sha256": get_file_hash(file_path, "sha256")
-            if os.path.isfile(file_path)
-            else "",
+            "hash_md5": (
+                get_file_hash(file_path, "md5") if os.path.isfile(file_path) else ""
+            ),
+            "hash_sha256": (
+                get_file_hash(file_path, "sha256") if os.path.isfile(file_path) else ""
+            ),
         }
     except Exception as e:
         return {"error": str(e), "path": file_path}
