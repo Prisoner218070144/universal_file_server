@@ -39,7 +39,7 @@ jobs:
       run: |
         isort --check-only --diff --profile black .
     
-    #- name: Type check with mypy
+    #- name: Type check with mypy 
       #run: |
         #mypy --ignore-missing-imports --strict .
     
