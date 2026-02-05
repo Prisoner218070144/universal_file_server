@@ -349,13 +349,22 @@ def get_file_info(file_path: str) -> Dict[str, Any]:
             actual_size = os.path.getsize(file_path)
         else:
             actual_size = stat.st_size
+        
+        # Handle st_birthtime which doesn't exist on Linux
+        # Use st_ctime (change time) as fallback for creation time
+        if hasattr(stat, 'st_birthtime'):
+            created_time = stat.st_birthtime
+        else:
+            # On Linux and other systems without st_birthtime, use st_ctime
+            # Note: st_ctime is change time, not creation time
+            created_time = stat.st_ctime
 
         return {
             "path": file_path,
             "size": actual_size,
             "size_readable": get_readable_size(actual_size),
-            "created": stat.st_birthtime,
-            "created_readable": format_timestamp(stat.st_birthtime),
+            "created": created_time,
+            "created_readable": format_timestamp(created_time),
             "modified": stat.st_mtime,
             "modified_readable": format_timestamp(stat.st_mtime),
             "accessed": stat.st_atime,
